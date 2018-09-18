@@ -1,0 +1,21 @@
+# libcryp Kconfig
+config USR_DRV_CRYP
+  bool  "userspace CRYP driver library"
+  default y
+  ---help---
+  Support for CRYP device in user space. This library
+  can be used for both user and configuration scheme of
+  the CRYP device, depending on the selected permissions.
+  the CRYP device MUST be mapped first.
+config USR_DRV_CRYP_DEBUG
+  bool "CRYP driver debug pretty printing"
+  depends on USR_DRV_CRYP
+  default n
+  ---help---
+  Activate debug printf in libcrypt. Remember that it
+  generates printf (which means syscalls) and implies
+  bigger rodata due to const strings.
+config USR_DRV_CRYP_CFLAGS
+  string
+  default " -I../../drivers/socs/stm32f439/cryp/api " if USR_DRV_CRYP
+
