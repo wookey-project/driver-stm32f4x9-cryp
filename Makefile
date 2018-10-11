@@ -17,7 +17,7 @@ CFLAGS += -ffreestanding
 CFLAGS += $(DRIVERS_CFLAGS)
 CFLAGS += -I$(PROJ_FILES)/include/generated -I$(PROJ_FILES) -I$(PROJ_FILES)/libs/std -I.
 CFLAGS += -I$(PROJ_FILES)/drivers/socs/$(CONFIG_SOCNAME)/dma
-CFLAGS += -MMD -MP
+CFLAGS += -MMD -MP -O0
 
 LDFLAGS += -fno-builtin -nostdlib -nostartfiles
 LD_LIBS +=

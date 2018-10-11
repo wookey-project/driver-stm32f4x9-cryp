@@ -185,6 +185,12 @@ void enable_crypt(void);
  *
  * This function should be called before calling encrypt_dma or encrypt_no_dma.
  */
+
+void cryp_init_user(enum crypto_key_len key_len,
+               const uint8_t * iv, enum crypto_algo mode, enum crypto_dir dir);
+
+void cryp_init_injector(const uint8_t * key, enum crypto_key_len key_len);
+
 void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
                const uint8_t * iv, enum crypto_algo mode, enum crypto_dir dir);
 
@@ -210,5 +216,8 @@ void cryp_do_no_dma(const uint8_t * data_in, uint8_t * data_out,
  */
 void cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size,
                  int dma_in_desc, int dma_out_desc);
+
+
+bool cryp_dir_switched(enum crypto_dir dir);
 
 #endif                          /* CRYP_H */
