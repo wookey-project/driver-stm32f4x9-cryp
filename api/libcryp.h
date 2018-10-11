@@ -218,6 +218,10 @@ void cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size,
                  int dma_in_desc, int dma_out_desc);
 
 
+enum crypto_dir cryp_get_dir(void);
+
 bool cryp_dir_switched(enum crypto_dir dir);
+
+void cryp_set_mode(enum crypto_algo mode);
 
 #endif                          /* CRYP_H */

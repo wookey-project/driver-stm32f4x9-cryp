@@ -5,14 +5,17 @@
 #include "api/syscall.h"
 #include "api/print.h"
 
+static int is_busy(void)
+{
+    return get_reg(r_CORTEX_M_CRYP_SR, CRYP_SR_BUSY);
+}
+
 static enum crypto_mode current_mode;
 
 void cryp_set_keylen(enum crypto_key_len  key_len)
 {
     set_reg(r_CORTEX_M_CRYP_CR, key_len, CRYP_CR_KEYSIZE);
 }
-
-
 
 
 void cryp_set_iv(const uint8_t * iv)
@@ -32,9 +35,11 @@ static void cryp_set_datatype(uint8_t datatype)
     set_reg(r_CORTEX_M_CRYP_CR, datatype, CRYP_CR_DATATYPE);
 }
 
-static void cryp_set_mode(enum crypto_algo mode)
+void cryp_set_mode(enum crypto_algo mode)
 {
     set_reg(r_CORTEX_M_CRYP_CR, mode, CRYP_CR_ALGOMODE);
+    while (is_busy())
+        continue;
 }
 
 static void set_dir(enum crypto_dir dir)
@@ -50,11 +55,6 @@ void enable_crypt(void)
 static void disable_crypt(void)
 {
     clear_reg_bits(r_CORTEX_M_CRYP_CR, CRYP_CR_CRYPEN_Msk);
-}
-
-static int is_busy(void)
-{
-    return get_reg(r_CORTEX_M_CRYP_SR, CRYP_SR_BUSY);
 }
 
 static void flush_fifos(void)
@@ -85,7 +85,7 @@ void cryp_enable_dma(void)
     set_reg_bits(r_CORTEX_M_CRYP_DMACR, CRYP_DMACR_DOEN_Msk);
 }
 
-static enum crypto_dir get_dir(void)
+enum crypto_dir cryp_get_dir(void)
 {
     return (enum crypto_dir)get_reg_value(r_CORTEX_M_CRYP_CR, CRYP_CR_ALGODIR_Msk, CRYP_CR_ALGODIR_Pos);
 }
@@ -125,7 +125,7 @@ void cryp_set_key(const uint8_t * key, enum crypto_key_len key_len)
 
 void cryp_init_injector(const uint8_t * key, enum crypto_key_len key_len)
 {
-    disable_crypt();
+//    disable_crypt();
 
     if (key) {
       cryp_set_key(key, key_len);
@@ -133,14 +133,14 @@ void cryp_init_injector(const uint8_t * key, enum crypto_key_len key_len)
 
     while (is_busy())
         continue;
-//    enable_crypt();
-//    flush_fifos();
+    enable_crypt();
+    flush_fifos();
 }
 
 
 bool cryp_dir_switched(enum crypto_dir dir)
 {
-    if (get_dir() != dir) {
+    if (cryp_get_dir() != dir) {
         return true;
     }
     return false;
@@ -150,26 +150,12 @@ void cryp_init_user(enum crypto_key_len key_len,
                const uint8_t * iv, enum crypto_algo mode, enum crypto_dir dir)
 {
 //    disable_crypt();
-//
+
     while (is_busy())
         continue;
     cryp_set_datatype(CRYP_CR_DATATYPE_BYTES);
     key_len = key_len;
-#if 0
-    if (key_len) {
-        cryp_set_keylen(key_len);
-           while (is_busy())
-               continue;
-    } 
-#endif
-    if (dir == DECRYPT && (mode == AES_CBC || mode == AES_ECB)) {
-        cryp_set_mode(AES_KEY_PREPARE);
-    }
-    while (is_busy())
-        continue;
     cryp_set_mode(mode);
-    while (is_busy())
-        continue;
     set_dir(dir);
 
     if (iv) {
@@ -178,12 +164,8 @@ void cryp_init_user(enum crypto_key_len key_len,
         cryp_set_iv(iv);
     }
 
-    flush_fifos();
-
     enable_crypt();
-    //flush_fifos();
-    while (is_busy())
-        continue;
+    flush_fifos();
 }
 
 
