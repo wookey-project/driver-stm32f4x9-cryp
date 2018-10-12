@@ -224,4 +224,5 @@ bool cryp_dir_switched(enum crypto_dir dir);
 
 void cryp_set_mode(enum crypto_algo mode);
 
+void cryp_wait_for_emtpy_fifos(void);
 #endif                          /* CRYP_H */

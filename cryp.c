@@ -67,6 +67,18 @@ static int is_out_fifo_not_empty(void)
     return get_reg(r_CORTEX_M_CRYP_SR, CRYP_SR_OFNE);
 }
 
+static int is_in_fifo_not_empty(void)
+{
+    return get_reg(r_CORTEX_M_CRYP_SR, CRYP_SR_IFEM);
+}
+
+void cryp_wait_for_emtpy_fifos(void)
+{
+    while (get_reg_value(r_CORTEX_M_CRYP_SR, CRYP_SR_OFNE_Msk | CRYP_SR_IFEM_Msk, 0) != CRYP_SR_IFEM_Msk) {
+        continue;
+    }
+}
+
 static int is_in_fifo_not_full(void)
 {
     return get_reg(r_CORTEX_M_CRYP_SR, CRYP_SR_IFNF);
