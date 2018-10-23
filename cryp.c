@@ -469,7 +469,7 @@ void cryp_early_init(bool with_dma,
     if (usage == CRYP_USER) {
         dev.size = 0x100;
     } else {
-        dev.size = 0x1000;
+        dev.size = 0x800;
     }
     dev.map_mode = DEV_MAP_AUTO;
     dev.irq_num = 0;
