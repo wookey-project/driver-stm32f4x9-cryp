@@ -1,9 +1,17 @@
 #include "api/libcryp.h"
 #include "api/regutils.h"
-#include "api/libdma_regs.h"
-#include "api/libdma.h"
 #include "api/syscall.h"
 #include "api/print.h"
+
+enum dma_controller {
+    DMA1 = 1,
+    DMA2 = 2
+};
+
+#define DMA2_CHANNEL_CRYP 2
+#define DMA2_STREAM_CRYP_OUT	5
+#define DMA2_STREAM_CRYP_IN		6
+
 
 static int is_busy(void)
 {
@@ -324,8 +332,8 @@ void cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size, i
     dma_in.mem_inc      = 1;
     dma_in.dev_inc      = 0;
     dma_in.datasize     = DMA_DS_WORD;
-    dma_in.mem_burst    = INCR4;
-    dma_in.dev_burst    = INCR4;
+    dma_in.mem_burst    = DMA_BURST_INC4;
+    dma_in.dev_burst    = DMA_BURST_INC4;
     dma_in.flow_control = DMA_FLOWCTRL_DMA;
     dma_in.in_handler   = (user_dma_handler_t) 0;
     dma_in.out_handler  = (user_dma_handler_t) 0;    /* not used */
@@ -358,8 +366,8 @@ void cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size, i
     dma_out.mem_inc     = 1;
     dma_out.dev_inc     = 0;
     dma_out.datasize    = DMA_DS_WORD;
-    dma_out.mem_burst   = INCR4;
-    dma_out.dev_burst   = INCR4;
+    dma_out.mem_burst   = DMA_BURST_INC4;
+    dma_out.dev_burst   = DMA_BURST_INC4;
     dma_in.flow_control = DMA_FLOWCTRL_DMA;
     dma_out.in_handler  = (user_dma_handler_t) 0;    /* not used */
     dma_out.out_handler = (user_dma_handler_t) 0;
@@ -398,8 +406,8 @@ void cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
     dma_in.mem_inc  = 1;
     dma_in.dev_inc  = 0;
     dma_in.datasize = DMA_DS_WORD;
-    dma_in.mem_burst    = INCR4;
-    dma_in.dev_burst    = INCR4;
+    dma_in.mem_burst    = DMA_BURST_INC4;
+    dma_in.dev_burst    = DMA_BURST_INC4;
     dma_in.in_handler   = (user_dma_handler_t) handler_in;
     dma_in.out_handler  = (user_dma_handler_t) handler_out;  /* not used */
 
@@ -430,8 +438,8 @@ void cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
     dma_out.mem_inc     = 1;
     dma_out.dev_inc     = 0;
     dma_out.datasize    = DMA_DS_WORD;
-    dma_out.mem_burst   = INCR4;
-    dma_out.dev_burst   = INCR4;
+    dma_out.mem_burst   = DMA_BURST_INC4;
+    dma_out.dev_burst   = DMA_BURST_INC4;
     dma_out.in_handler  = (user_dma_handler_t) handler_in;   /* not used */
     dma_out.out_handler = (user_dma_handler_t) handler_out;
 
@@ -501,8 +509,8 @@ void cryp_early_init(bool with_dma,
     dma_in.mem_inc = 1;
     dma_in.dev_inc = 0;
     dma_in.datasize = DMA_DS_WORD;
-    dma_in.mem_burst = INCR4;
-    dma_in.dev_burst = INCR4;
+    dma_in.mem_burst = DMA_BURST_INC4;
+    dma_in.dev_burst = DMA_BURST_INC4;
     dma_in.in_handler = (user_dma_handler_t) 0;
     dma_in.out_handler = (user_dma_handler_t) 0;    /* not used */
 
@@ -531,8 +539,8 @@ void cryp_early_init(bool with_dma,
     dma_out.mem_inc = 1;
     dma_out.dev_inc = 0;
     dma_out.datasize = DMA_DS_WORD;
-    dma_out.mem_burst = INCR4;
-    dma_out.dev_burst = INCR4;
+    dma_out.mem_burst = DMA_BURST_INC4;
+    dma_out.dev_burst = DMA_BURST_INC4;
     dma_out.in_handler = (user_dma_handler_t) 0;    /* not used */
     dma_out.out_handler = (user_dma_handler_t) 0;
 
