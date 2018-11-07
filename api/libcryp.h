@@ -166,7 +166,7 @@ void soc_encrypt_no_dma(const uint8_t * data_in, uint8_t * data_out,
 
 void cryp_set_key(const uint8_t * key, enum crypto_key_len key_len);
 
-void cryp_set_iv(const uint8_t * iv);
+void cryp_set_iv(const uint8_t * iv, unsigned int iv_len);
 
 void cryp_enable_dma(void);
 
@@ -187,12 +187,12 @@ void enable_crypt(void);
  */
 
 void cryp_init_user(enum crypto_key_len key_len,
-               const uint8_t * iv, enum crypto_algo mode, enum crypto_dir dir);
+               const uint8_t * iv, unsigned int iv_len, enum crypto_algo mode, enum crypto_dir dir);
 
 void cryp_init_injector(const uint8_t * key, enum crypto_key_len key_len);
 
 void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
-               const uint8_t * iv, enum crypto_algo mode, enum crypto_dir dir);
+               const uint8_t * iv, unsigned int iv_len, enum crypto_algo mode, enum crypto_dir dir);
 
 /* initialize DMA streams for cryp (not runnable, should be reconf later) */
 void cryp_early_init(bool with_dma,

@@ -29,18 +29,27 @@ void cryp_set_keylen(enum crypto_key_len  key_len)
 }
 
 
-void cryp_set_iv(const uint8_t * iv)
+void cryp_set_iv(const uint8_t * iv, unsigned int iv_len)
 {
-   while (is_busy())
+    while (is_busy())
        continue;
+    if(iv == NULL){
+       return;
+    }
+    /* IV is either 64 bits (for (T)DES) or 128 bits (for AES) */
+    if((iv_len != 8) && (iv_len != 16)){
+        return;
+    }
     write_reg_value(r_CORTEX_M_CRYP_IVxLR(0), to_big32(*(uint32_t *) iv));
     iv += 4;
     write_reg_value(r_CORTEX_M_CRYP_IVxRR(0), to_big32(*(uint32_t *) iv));
-    iv += 4;
-    write_reg_value(r_CORTEX_M_CRYP_IVxLR(1), to_big32(*(uint32_t *) iv));
-    iv += 4;
-    write_reg_value(r_CORTEX_M_CRYP_IVxRR(1), to_big32(*(uint32_t *) iv));
-    iv += 4;
+    if(iv_len == 16){
+        iv += 4;
+        write_reg_value(r_CORTEX_M_CRYP_IVxLR(1), to_big32(*(uint32_t *) iv));
+        iv += 4;
+        write_reg_value(r_CORTEX_M_CRYP_IVxRR(1), to_big32(*(uint32_t *) iv));
+        iv += 4;
+    }
 }
 
 static void cryp_set_datatype(uint8_t datatype)
@@ -123,6 +132,9 @@ enum crypto_dir cryp_get_dir(void)
 
 void cryp_set_key(const uint8_t * key, enum crypto_key_len key_len)
 {
+    if(key == NULL){
+        return;
+    }
     set_reg(r_CORTEX_M_CRYP_CR, key_len, CRYP_CR_KEYSIZE);
 
     key += (16 + (8 * key_len) - 4);
@@ -178,7 +190,7 @@ bool cryp_dir_switched(enum crypto_dir dir)
 }
 
 void cryp_init_user(enum crypto_key_len key_len,
-               const uint8_t * iv, enum crypto_algo mode, enum crypto_dir dir)
+               const uint8_t * iv, unsigned int iv_len, enum crypto_algo mode, enum crypto_dir dir)
 {
     flush_fifos();
     cryp_set_datatype(CRYP_CR_DATATYPE_BYTES);
@@ -188,7 +200,7 @@ void cryp_init_user(enum crypto_key_len key_len,
 
     if (iv) {
         disable_crypt();
-        cryp_set_iv(iv);
+        cryp_set_iv(iv, iv_len);
         enable_crypt();
     }
 
@@ -199,7 +211,7 @@ void cryp_init_user(enum crypto_key_len key_len,
 
 
 void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
-               const uint8_t * iv, enum crypto_algo mode, enum crypto_dir dir)
+               const uint8_t * iv, unsigned int iv_len, enum crypto_algo mode, enum crypto_dir dir)
 {
 
     disable_crypt();
@@ -207,7 +219,7 @@ void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
     // TODO check that the acknowledgement is effective in the buffer
     // config
     if (iv) {
-        cryp_set_iv(iv);
+        cryp_set_iv(iv, iv_len);
     }
     if (key) {
         cryp_set_key(key, key_len);
@@ -226,58 +238,6 @@ void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
 
     enable_crypt();
     flush_fifos();
-#if 0
-        while (is_busy())
-            continue;
-    disable_crypt();
-
-    // TODO check that the acknowledgement is effective in the buffer
-    // config
-    if (iv) {
-        while (is_busy())
-            continue;
-        cryp_set_iv(iv);
-    }
-    if (key) {
-        while (is_busy())
-            continue;
-        cryp_set_key(key, key_len);
-    }
-    cryp_set_datatype(CRYP_CR_DATATYPE_BYTES);
-
-    if ((get_dir() != dir) || key != 0) {
-        while (is_busy())
-            continue;
-        set_dir(dir);
-        while (is_busy())
-            continue;
-       if (key_len) {
-           cryp_set_keylen(key_len);
-           while (is_busy())
-               continue;
-       } 
-    //    printf("preparing key...\n");
-        cryp_set_mode(AES_KEY_PREPARE);
-        while (is_busy())
-            continue;
-    }
-#if 0
-    /* Prepare key when decryption is asked (except for CTR mode) */
-    if ((dir == DECRYPT) && (mode != AES_CTR)) {
-        enable_crypt();
-        while (is_busy())
-            continue;
-    }
-#endif
-    while (is_busy())
-        continue;
-    cryp_set_mode(mode);
-
-    while (is_busy())
-        continue;
-    enable_crypt();
-    flush_fifos();
-#endif
 }
 
 void cryp_do_no_dma(const uint8_t * data_in, uint8_t * data_out,
