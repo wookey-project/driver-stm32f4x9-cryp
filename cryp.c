@@ -189,12 +189,11 @@ bool cryp_dir_switched(enum crypto_dir dir)
     return false;
 }
 
-void cryp_init_user(enum crypto_key_len key_len,
+void cryp_init_user(enum crypto_key_len key_len __attribute__((unused)) /* TODO: to be removed */,
                const uint8_t * iv, unsigned int iv_len, enum crypto_algo mode, enum crypto_dir dir)
 {
     flush_fifos();
     cryp_set_datatype(CRYP_CR_DATATYPE_BYTES);
-    key_len = key_len;
     cryp_set_mode(mode);
     set_dir(dir);
 
@@ -438,7 +437,8 @@ void cryp_early_init(bool with_dma,
     e_syscall_ret ret = 0;
 
     current_mode = mode;
-    device_t dev = { 0 };
+    device_t dev;
+    memset((void*)&dev, 0, sizeof(device_t));
     int      dev_desc = 0;
     strncpy(dev.name, name, sizeof (dev.name));
     dev.address = 0x50060000;
