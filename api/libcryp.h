@@ -174,6 +174,8 @@ void cryp_set_key(const uint8_t * key, enum crypto_key_len key_len);
 
 void cryp_set_iv(const uint8_t * iv, unsigned int iv_len);
 
+void cryp_get_iv(const uint8_t * iv, unsigned int iv_len);
+
 void cryp_enable_dma(void);
 
 void enable_crypt(void);
@@ -232,4 +234,6 @@ bool cryp_dir_switched(enum crypto_dir dir);
 void cryp_set_mode(enum crypto_algo mode);
 
 void cryp_wait_for_emtpy_fifos(void);
+
+void cryp_flush_fifos(void);
 #endif                          /* CRYP_H */

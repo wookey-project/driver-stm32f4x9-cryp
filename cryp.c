@@ -55,6 +55,29 @@ void cryp_set_iv(const uint8_t * iv, unsigned int iv_len)
     }
 }
 
+void cryp_get_iv(const uint8_t * iv, unsigned int iv_len)
+{
+    while (is_busy())
+       continue;
+    if(iv == NULL){
+       return;
+    }
+    /* IV is either 64 bits (for (T)DES) or 128 bits (for AES) */
+    if((iv_len != 8) && (iv_len != 16)){
+        return;
+    }
+    *(uint32_t *) iv = to_big32(read_reg_value(r_CORTEX_M_CRYP_IVxLR(0)));
+    iv += 4;
+    *(uint32_t *) iv = to_big32(read_reg_value(r_CORTEX_M_CRYP_IVxRR(0)));
+    if(iv_len == 16){
+        iv += 4;
+        *(uint32_t *) iv = to_big32(read_reg_value(r_CORTEX_M_CRYP_IVxLR(1)));
+        iv += 4;
+        *(uint32_t *) iv = to_big32(read_reg_value(r_CORTEX_M_CRYP_IVxRR(1)));
+        iv += 4;
+    }
+}
+
 static void cryp_set_datatype(uint8_t datatype)
 {
    while (is_busy())
@@ -86,7 +109,7 @@ static void disable_crypt(void)
     clear_reg_bits(r_CORTEX_M_CRYP_CR, CRYP_CR_CRYPEN_Msk);
 }
 
-static void flush_fifos(void)
+void cryp_flush_fifos(void)
 {
     set_reg(r_CORTEX_M_CRYP_CR, 1, CRYP_CR_FFLUSH);
    while (is_busy())
@@ -189,7 +212,7 @@ void cryp_init_injector(const uint8_t * key, enum crypto_key_len key_len)
     }
 
     enable_crypt();
-    flush_fifos();
+    cryp_flush_fifos();
 err:
     return;
 }
@@ -209,7 +232,7 @@ void cryp_init_user(enum crypto_key_len key_len __attribute__((unused)) /* TODO:
     if (!cryp_is_mapped) {
         sys_cfg(CFG_DEV_MAP, dev_desc);
     }
-    flush_fifos();
+    cryp_flush_fifos();
     cryp_set_datatype(CRYP_CR_DATATYPE_BYTES);
     cryp_set_mode(mode);
     set_dir(dir);
@@ -221,7 +244,7 @@ void cryp_init_user(enum crypto_key_len key_len __attribute__((unused)) /* TODO:
     }
 
     enable_crypt();
-    flush_fifos();
+    cryp_flush_fifos();
 }
 
 
@@ -253,7 +276,7 @@ void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
     cryp_set_mode(mode);
 
     enable_crypt();
-    flush_fifos();
+    cryp_flush_fifos();
 }
 
 void cryp_do_no_dma(const uint8_t * data_in, uint8_t * data_out,
