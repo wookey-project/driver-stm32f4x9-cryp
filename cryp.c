@@ -12,6 +12,9 @@ enum dma_controller {
 #define DMA2_STREAM_CRYP_OUT	5
 #define DMA2_STREAM_CRYP_IN		6
 
+static volatile bool cryp_is_mapped = false;
+
+static int      dev_desc = 0;
 
 static int is_busy(void)
 {
@@ -170,6 +173,15 @@ void cryp_set_key(const uint8_t * key, enum crypto_key_len key_len)
 
 void cryp_init_injector(const uint8_t * key, enum crypto_key_len key_len)
 {
+    if (!cryp_is_mapped) {
+        uint8_t ret;
+        ret = sys_cfg(CFG_DEV_MAP, dev_desc);
+        if (ret != SYS_E_DONE) {
+            printf("Unable to map cryp!\n");
+            goto err;
+        }
+        cryp_is_mapped = true;
+    }
     disable_crypt();
 
     if (key) {
@@ -178,6 +190,8 @@ void cryp_init_injector(const uint8_t * key, enum crypto_key_len key_len)
 
     enable_crypt();
     flush_fifos();
+err:
+    return;
 }
 
 
@@ -192,6 +206,9 @@ bool cryp_dir_switched(enum crypto_dir dir)
 void cryp_init_user(enum crypto_key_len key_len __attribute__((unused)) /* TODO: to be removed */,
                const uint8_t * iv, unsigned int iv_len, enum crypto_algo mode, enum crypto_dir dir)
 {
+    if (!cryp_is_mapped) {
+        sys_cfg(CFG_DEV_MAP, dev_desc);
+    }
     flush_fifos();
     cryp_set_datatype(CRYP_CR_DATATYPE_BYTES);
     cryp_set_mode(mode);
@@ -428,6 +445,7 @@ void cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
 
 
 void cryp_early_init(bool with_dma,
+                     cryp_map_mode_t map_mode,
                      enum crypto_usage usage,
                      enum crypto_mode mode,
                      int *dma_in_desc,
@@ -439,7 +457,6 @@ void cryp_early_init(bool with_dma,
     current_mode = mode;
     device_t dev;
     memset((void*)&dev, 0, sizeof(device_t));
-    int      dev_desc = 0;
     strncpy(dev.name, name, sizeof (dev.name));
     dev.address = 0x50060000;
     if (usage == CRYP_USER) {
@@ -447,7 +464,12 @@ void cryp_early_init(bool with_dma,
     } else {
         dev.size = 0x800;
     }
-    dev.map_mode = DEV_MAP_AUTO;
+    if (map_mode == CRYP_MAP_AUTO) {
+      dev.map_mode = DEV_MAP_AUTO;
+      cryp_is_mapped = true;
+    } else {
+      dev.map_mode = DEV_MAP_VOLUNTARY;
+    }
     dev.irq_num = 0;
     dev.gpio_num = 0;
 

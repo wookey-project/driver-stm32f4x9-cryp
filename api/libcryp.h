@@ -104,6 +104,12 @@ enum crypto_mode {
     CRYP_PRODMODE,
 };
 
+typedef enum {
+    CRYP_MAP_AUTO,
+    CRYP_MAP_VOLUNTARY
+} cryp_map_mode_t;
+
+
 enum crypto_key_len {
     KEY_128,
     KEY_192,
@@ -196,6 +202,7 @@ void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
 
 /* initialize DMA streams for cryp (not runnable, should be reconf later) */
 void cryp_early_init(bool with_dma,
+                     cryp_map_mode_t map_mode,
                      enum crypto_usage usage,
                      enum crypto_mode mode,
                      int * dma_in_desc,
