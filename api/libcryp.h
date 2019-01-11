@@ -132,6 +132,9 @@ enum crypto_dir {
     DECRYPT
 };
 
+int cryp_map(void);
+int cryp_unmap(void);
+
 /**
  * encrypt_no_dma - Encrypt/Decrypt data without DMA
  * @data_in: Address of the buffer where this function will read data. The

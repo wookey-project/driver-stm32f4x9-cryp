@@ -14,7 +14,44 @@ enum dma_controller {
 
 static volatile bool cryp_is_mapped = false;
 
-static int      dev_desc = 0;
+static volatile int      dev_cryp_desc = 0;
+
+int cryp_map(void)
+{
+    if (cryp_is_mapped == false) {
+        printf("Mapping cryp\n");
+        uint8_t ret;
+        ret = sys_cfg(CFG_DEV_MAP, dev_cryp_desc);
+        cryp_is_mapped = true;
+        if (ret != SYS_E_DONE) {
+            printf("Unable to map cryp!\n");
+            goto err;
+        }
+    }
+
+    return 0;
+err:
+    return -1;
+}
+
+int cryp_unmap(void)
+{
+    if (cryp_is_mapped) {
+        printf("Unmapping cryp\n");
+        uint8_t ret;
+        ret = sys_cfg(CFG_DEV_UNMAP, dev_cryp_desc);
+        cryp_is_mapped = false;
+        if (ret != SYS_E_DONE) {
+            printf("Unable to unmap cryp!\n");
+            goto err;
+        }
+    }
+
+    return 0;
+err:
+    return -1;
+}
+
 
 static int is_busy(void)
 {
@@ -198,7 +235,7 @@ void cryp_init_injector(const uint8_t * key, enum crypto_key_len key_len)
 {
     if (!cryp_is_mapped) {
         uint8_t ret;
-        ret = sys_cfg(CFG_DEV_MAP, dev_desc);
+        ret = sys_cfg(CFG_DEV_MAP, dev_cryp_desc);
         if (ret != SYS_E_DONE) {
             printf("Unable to map cryp!\n");
             goto err;
@@ -230,7 +267,7 @@ void cryp_init_user(enum crypto_key_len key_len __attribute__((unused)) /* TODO:
                const uint8_t * iv, unsigned int iv_len, enum crypto_algo mode, enum crypto_dir dir)
 {
     if (!cryp_is_mapped) {
-        sys_cfg(CFG_DEV_MAP, dev_desc);
+        sys_cfg(CFG_DEV_MAP, dev_cryp_desc);
     }
     cryp_flush_fifos();
     cryp_set_datatype(CRYP_CR_DATATYPE_BYTES);
@@ -501,7 +538,7 @@ void cryp_early_init(bool with_dma,
 #endif
 
     // FIXME - proper handling of ret
-    ret = sys_init(INIT_DEVACCESS, &dev, &dev_desc);
+    ret = sys_init(INIT_DEVACCESS, &dev, &dev_cryp_desc);
 
 #ifdef CONFIG_USR_DRV_CRYP_DEBUG
     printf("sys_init returns %s !\n", strerror(ret));
