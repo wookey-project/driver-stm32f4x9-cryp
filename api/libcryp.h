@@ -177,7 +177,7 @@ void cryp_set_key(const uint8_t * key, enum crypto_key_len key_len);
 
 void cryp_set_iv(const uint8_t * iv, unsigned int iv_len);
 
-void cryp_get_iv(const uint8_t * iv, unsigned int iv_len);
+void cryp_get_iv(uint8_t * iv, unsigned int iv_len);
 
 void cryp_enable_dma(void);
 

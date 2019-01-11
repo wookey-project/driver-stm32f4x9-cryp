@@ -92,7 +92,7 @@ void cryp_set_iv(const uint8_t * iv, unsigned int iv_len)
     }
 }
 
-void cryp_get_iv(const uint8_t * iv, unsigned int iv_len)
+void cryp_get_iv(uint8_t * iv, unsigned int iv_len)
 {
     while (is_busy())
        continue;
