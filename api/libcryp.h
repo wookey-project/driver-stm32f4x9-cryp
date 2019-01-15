@@ -206,7 +206,7 @@ void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
                const uint8_t * iv, unsigned int iv_len, enum crypto_algo mode, enum crypto_dir dir);
 
 /* initialize DMA streams for cryp (not runnable, should be reconf later) */
-void cryp_early_init(bool with_dma,
+int cryp_early_init(bool with_dma,
                      cryp_map_mode_t map_mode,
                      enum crypto_usage usage,
                      enum crypto_mode mode,
@@ -214,19 +214,19 @@ void cryp_early_init(bool with_dma,
                      int * dma_out_desc);
 
 /* configure the DMA streams with proper informations (handlers, buffers...) */
-void cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
+int cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
                    int dma_out_desc);
 
 /*
  * start cryp with no DMA support
  */
-void cryp_do_no_dma(const uint8_t * data_in, uint8_t * data_out,
+int cryp_do_no_dma(const uint8_t * data_in, uint8_t * data_out,
                     uint32_t data_len);
 
 /*
  * start cryp using DMA (this requires libdma)
  */
-void cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size,
+int cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size,
                  int dma_in_desc, int dma_out_desc);
 
 
