@@ -377,7 +377,7 @@ int cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size, in
     if(((uint32_t)bufin % 4 != 0) || ((uint32_t)bufout % 4 != 0)){
 #if CONFIG_USR_DRV_CRYP_DEBUG
         printf("Error: DMA CRYP, DMA buffers addresses not word aligned! (bufin=%x, bufout=%x)\n", bufin, bufout);
-#endif      
+#endif
         goto err;
     }
 
@@ -415,7 +415,7 @@ int cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size, in
 #endif
         /* FIXME: DMA reconf being partial, we have a warning by the kernel
          * and hence ret is not SYS_E_DONE ...
-         */  
+         */
         //goto err;
     }
 #if CONFIG_USR_DRV_CRYP_DEBUG
@@ -453,16 +453,16 @@ int cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size, in
     if(ret != SYS_E_DONE){
 #if CONFIG_USR_DRV_CRYP_DEBUG
         printf("Error: DMA CRYP, sys_cfg CFG_DMA_RECONF error!\n");
-#endif  
+#endif
         /* FIXME: DMA reconf being partial, we have a warning by the kernel
 	 * and hence ret is not SYS_E_DONE ...
-	 */  
+	 */
         //goto err;
     }
 #if CONFIG_USR_DRV_CRYP_DEBUG
     printf("sys_init returns %s !\n", strerror(ret));
 #endif
- 
+
     return 0;
 
 err:
@@ -505,10 +505,7 @@ int cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
 #if CONFIG_USR_DRV_CRYP_DEBUG
         printf("Error: DMA CRYP, sys_cfg CFG_DMA_RECONF error!\n");
 #endif
-         /* FIXME: DMA reconf being partial, we have a warning by the kernel
-	 * and hence ret is not SYS_E_DONE ...
-	 */  
-        //goto err;
+        goto err;
     }
 #if CONFIG_USR_DRV_CRYP_DEBUG
     printf("sys_init returns %s !\n", strerror(ret));
@@ -545,11 +542,8 @@ int cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
     if(ret != SYS_E_DONE){
 #if CONFIG_USR_DRV_CRYP_DEBUG
         printf("Error: DMA CRYP, sys_cfg CFG_DMA_RECONF error!\n");
-#endif      
-         /* FIXME: DMA reconf being partial, we have a warning by the kernel
-	 * and hence ret is not SYS_E_DONE ...
-	 */  
-        //goto err;
+#endif
+        goto err;
     }
 
 #if CONFIG_USR_DRV_CRYP_DEBUG
@@ -597,11 +591,11 @@ int cryp_early_init(bool with_dma,
     printf("registering cryp-user driver\n");
 #endif
 
-    ret = sys_init(INIT_DEVACCESS, &dev, &dev_cryp_desc);
+    ret = sys_init(INIT_DEVACCESS, &dev, (int*)&dev_cryp_desc);
     if(ret != SYS_E_DONE){
 #if CONFIG_USR_DRV_CRYP_DEBUG
         printf("Error: DMA CRYP, sys_init error!\n");
-#endif      
+#endif
         goto err;
     }
 
@@ -637,7 +631,7 @@ int cryp_early_init(bool with_dma,
     if(ret != SYS_E_DONE){
 #if CONFIG_USR_DRV_CRYP_DEBUG
         printf("Error: DMA CRYP, sys_init error!\n");
-#endif      
+#endif
         goto err;
     }
 
@@ -672,7 +666,7 @@ int cryp_early_init(bool with_dma,
     if(ret != SYS_E_DONE){
 #if CONFIG_USR_DRV_CRYP_DEBUG
         printf("Error: DMA CRYP, sys_init error!\n");
-#endif      
+#endif
         goto err;
     }
 
