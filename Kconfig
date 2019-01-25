@@ -15,7 +15,3 @@ config USR_DRV_CRYP_DEBUG
   Activate debug printf in libcrypt. Remember that it
   generates printf (which means syscalls) and implies
   bigger rodata due to const strings.
-config USR_DRV_CRYP_CFLAGS
-  string
-  default " -I../../drivers/socs/stm32f439/cryp/api " if USR_DRV_CRYP
-
