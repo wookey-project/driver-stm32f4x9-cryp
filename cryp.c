@@ -1,7 +1,8 @@
 #include "api/libcryp.h"
 #include "api/regutils.h"
 #include "api/syscall.h"
-#include "api/print.h"
+#include "api/stdio.h"
+#include "api/nostd.h"
 #include "api/string.h"
 
 enum dma_controller {
