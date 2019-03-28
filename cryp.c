@@ -4,6 +4,7 @@
 #include "api/stdio.h"
 #include "api/nostd.h"
 #include "api/string.h"
+#include "api/arpa/inet.h"
 
 enum dma_controller {
     DMA1 = 1,
@@ -92,14 +93,14 @@ void cryp_set_iv(const uint8_t * iv, unsigned int iv_len)
     if((iv_len != 8) && (iv_len != 16)){
         return;
     }
-    write_reg_value(r_CORTEX_M_CRYP_IVxLR(0), to_big32(*(uint32_t *) iv));
+    write_reg_value(r_CORTEX_M_CRYP_IVxLR(0), htonl(*(uint32_t *) iv));
     iv += 4;
-    write_reg_value(r_CORTEX_M_CRYP_IVxRR(0), to_big32(*(uint32_t *) iv));
+    write_reg_value(r_CORTEX_M_CRYP_IVxRR(0), htonl(*(uint32_t *) iv));
     if(iv_len == 16){
         iv += 4;
-        write_reg_value(r_CORTEX_M_CRYP_IVxLR(1), to_big32(*(uint32_t *) iv));
+        write_reg_value(r_CORTEX_M_CRYP_IVxLR(1), htonl(*(uint32_t *) iv));
         iv += 4;
-        write_reg_value(r_CORTEX_M_CRYP_IVxRR(1), to_big32(*(uint32_t *) iv));
+        write_reg_value(r_CORTEX_M_CRYP_IVxRR(1), htonl(*(uint32_t *) iv));
         iv += 4;
     }
 }
@@ -115,14 +116,14 @@ void cryp_get_iv(uint8_t * iv, unsigned int iv_len)
     if((iv_len != 8) && (iv_len != 16)){
         return;
     }
-    *(uint32_t *) iv = to_big32(read_reg_value(r_CORTEX_M_CRYP_IVxLR(0)));
+    *(uint32_t *) iv = htonl(read_reg_value(r_CORTEX_M_CRYP_IVxLR(0)));
     iv += 4;
-    *(uint32_t *) iv = to_big32(read_reg_value(r_CORTEX_M_CRYP_IVxRR(0)));
+    *(uint32_t *) iv = htonl(read_reg_value(r_CORTEX_M_CRYP_IVxRR(0)));
     if(iv_len == 16){
         iv += 4;
-        *(uint32_t *) iv = to_big32(read_reg_value(r_CORTEX_M_CRYP_IVxLR(1)));
+        *(uint32_t *) iv = htonl(read_reg_value(r_CORTEX_M_CRYP_IVxLR(1)));
         iv += 4;
-        *(uint32_t *) iv = to_big32(read_reg_value(r_CORTEX_M_CRYP_IVxRR(1)));
+        *(uint32_t *) iv = htonl(read_reg_value(r_CORTEX_M_CRYP_IVxRR(1)));
         iv += 4;
     }
 }
@@ -213,26 +214,26 @@ void cryp_set_key(const uint8_t * key, enum crypto_key_len key_len)
     set_reg(r_CORTEX_M_CRYP_CR, key_len, CRYP_CR_KEYSIZE);
 
     key += (16 + (8 * key_len) - 4);
-    write_reg_value(r_CORTEX_M_CRYP_KxRR(3), to_big32(*(uint32_t *) key));
+    write_reg_value(r_CORTEX_M_CRYP_KxRR(3), htonl(*(uint32_t *) key));
     key -= 4;
-    write_reg_value(r_CORTEX_M_CRYP_KxLR(3), to_big32(*(uint32_t *) key));
+    write_reg_value(r_CORTEX_M_CRYP_KxLR(3), htonl(*(uint32_t *) key));
     key -= 4;
-    write_reg_value(r_CORTEX_M_CRYP_KxRR(2), to_big32(*(uint32_t *) key));
+    write_reg_value(r_CORTEX_M_CRYP_KxRR(2), htonl(*(uint32_t *) key));
     key -= 4;
-    write_reg_value(r_CORTEX_M_CRYP_KxLR(2), to_big32(*(uint32_t *) key));
+    write_reg_value(r_CORTEX_M_CRYP_KxLR(2), htonl(*(uint32_t *) key));
     key -= 4;
 
     if (key_len == CRYP_CR_KEYSIZE_256 || key_len == CRYP_CR_KEYSIZE_192) {
-        write_reg_value(r_CORTEX_M_CRYP_KxRR(1), to_big32(*(uint32_t *) key));
+        write_reg_value(r_CORTEX_M_CRYP_KxRR(1), htonl(*(uint32_t *) key));
         key -= 4;
-        write_reg_value(r_CORTEX_M_CRYP_KxLR(1), to_big32(*(uint32_t *) key));
+        write_reg_value(r_CORTEX_M_CRYP_KxLR(1), htonl(*(uint32_t *) key));
         key -= 4;
     }
 
     if (key_len == CRYP_CR_KEYSIZE_256) {
-        write_reg_value(r_CORTEX_M_CRYP_KxRR(0), to_big32(*(uint32_t *) key));
+        write_reg_value(r_CORTEX_M_CRYP_KxRR(0), htonl(*(uint32_t *) key));
         key -= 4;
-        write_reg_value(r_CORTEX_M_CRYP_KxLR(0), to_big32(*(uint32_t *) key));
+        write_reg_value(r_CORTEX_M_CRYP_KxLR(0), htonl(*(uint32_t *) key));
         key -= 4;
     }
     while (is_busy())
