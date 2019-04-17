@@ -1,10 +1,10 @@
 #include "api/libcryp.h"
-#include "api/regutils.h"
-#include "api/syscall.h"
-#include "api/stdio.h"
-#include "api/nostd.h"
-#include "api/string.h"
-#include "api/arpa/inet.h"
+#include "libc/regutils.h"
+#include "libc/syscall.h"
+#include "libc/stdio.h"
+#include "libc/nostd.h"
+#include "libc/string.h"
+#include "libc/arpa/inet.h"
 
 enum dma_controller {
     DMA1 = 1,

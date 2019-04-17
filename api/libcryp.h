@@ -1,7 +1,7 @@
 #ifndef CRYP_H
 #define CRYP_H
 
-#include "api/types.h"
+#include "libc/types.h"
 
 #define CRYP_BASE			0x50060000
 
