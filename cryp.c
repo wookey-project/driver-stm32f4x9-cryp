@@ -71,8 +71,6 @@ static int is_busy(void)
     return get_reg(r_CORTEX_M_CRYP_SR, CRYP_SR_BUSY);
 }
 
-static enum crypto_mode current_mode;
-
 void cryp_set_keylen(enum crypto_key_len  key_len)
 {
 
@@ -564,14 +562,12 @@ err:
 int cryp_early_init(bool with_dma,
                      cryp_map_mode_t map_mode,
                      enum crypto_usage usage,
-                     enum crypto_mode mode,
                      int *dma_in_desc,
                      int *dma_out_desc)
 {
     const char *name = "cryp";
     e_syscall_ret ret = 0;
 
-    current_mode = mode;
     device_t dev;
     memset((void*)&dev, 0, sizeof(device_t));
     strncpy(dev.name, name, sizeof (dev.name));

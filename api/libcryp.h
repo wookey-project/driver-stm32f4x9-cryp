@@ -209,7 +209,6 @@ void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
 int cryp_early_init(bool with_dma,
                      cryp_map_mode_t map_mode,
                      enum crypto_usage usage,
-                     enum crypto_mode mode,
                      int * dma_in_desc,
                      int * dma_out_desc);
 
