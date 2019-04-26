@@ -234,8 +234,10 @@ void cryp_set_key(const uint8_t * key, enum crypto_key_len key_len)
         write_reg_value(r_CORTEX_M_CRYP_KxLR(0), htonl(*(uint32_t *) key));
         key -= 4;
     }
-    while (is_busy())
+    while (is_busy()){
         continue;
+    }
+    return;
 }
 /*
 ** configure, in both CRYP_CFG & CRYP_USER mode. beware to
@@ -293,6 +295,7 @@ void cryp_init_user(enum crypto_key_len key_len __attribute__((unused)) /* TODO:
 
     enable_crypt();
     cryp_flush_fifos();
+    return;
 }
 
 
@@ -325,6 +328,7 @@ void cryp_init(const uint8_t * key, enum crypto_key_len key_len,
 
     enable_crypt();
     cryp_flush_fifos();
+    return;
 }
 
 int cryp_do_no_dma(const uint8_t * data_in, uint8_t * data_out,
@@ -348,7 +352,7 @@ int cryp_do_no_dma(const uint8_t * data_in, uint8_t * data_out,
         }
 
         for (j = 0; j < (4 * num_states); j++) {
-            write_reg_value(r_CORTEX_M_CRYP_DIN, *(uint32_t *) data_in);
+            write_reg_value(r_CORTEX_M_CRYP_DIN, *(const uint32_t *) data_in);
             data_in += 4;
         }
         while (!is_out_fifo_not_empty())
