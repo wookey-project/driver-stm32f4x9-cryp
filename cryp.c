@@ -221,7 +221,7 @@ void cryp_set_key(const uint8_t * key, enum crypto_key_len key_len)
     write_reg_value(r_CORTEX_M_CRYP_KxLR(2), htonl(*(const uint32_t *) key));
     key -= 4;
 
-    if (key_len == CRYP_CR_KEYSIZE_256 || key_len == CRYP_CR_KEYSIZE_192) {
+    if ((key_len == CRYP_CR_KEYSIZE_256) || (key_len == CRYP_CR_KEYSIZE_192)) {
         write_reg_value(r_CORTEX_M_CRYP_KxRR(1), htonl(*(const uint32_t *) key));
         key -= 4;
         write_reg_value(r_CORTEX_M_CRYP_KxLR(1), htonl(*(const uint32_t *) key));
@@ -379,7 +379,7 @@ static dma_t dma_out;
 int cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size, int dma_in_desc, int dma_out_desc)
 {
     /* DMA addresses must be word aligned, perform a sanity check */
-    if(((uint32_t)bufin % 4 != 0) || ((uint32_t)bufout % 4 != 0)){
+    if((((uint32_t)bufin % 4) != 0) || (((uint32_t)bufout % 4) != 0)){
 #if CONFIG_USR_DRV_CRYP_DEBUG
         printf("Error: DMA CRYP, DMA buffers addresses not word aligned! (bufin=%x, bufout=%x)\n", bufin, bufout);
 #endif
