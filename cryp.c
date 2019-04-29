@@ -1,4 +1,5 @@
 #include "api/libcryp.h"
+#include "cryp_regs.h"
 #include "libc/regutils.h"
 #include "libc/syscall.h"
 #include "libc/stdio.h"
@@ -6,16 +7,13 @@
 #include "libc/string.h"
 #include "libc/arpa/inet.h"
 
-enum dma_controller {
-    DMA1 = 1,
-    DMA2 = 2
-};
-
 #define CONFIG_USR_DRV_CRYP_DEBUG 0
 
-#define DMA2_CHANNEL_CRYP 2
-#define DMA2_STREAM_CRYP_OUT	5
-#define DMA2_STREAM_CRYP_IN		6
+#define DMA_CRYP		CRYP_USER_DMA_CTRL
+#define DMA_CHANNEL_CRYP_IN 	CRYP_USER_DMA_IN_CHANNEL
+#define DMA_CHANNEL_CRYP_OUT 	CRYP_USER_DMA_OUT_CHANNEL
+#define DMA_STREAM_CRYP_OUT	CRYP_USER_DMA_OUT_STREAM
+#define DMA_STREAM_CRYP_IN	CRYP_USER_DMA_IN_STREAM
 
 static volatile bool cryp_is_mapped = false;
 
@@ -388,9 +386,9 @@ int cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size, in
 
     cryp_enable_dma();
     e_syscall_ret ret;
-    dma_in.dma          = DMA2;
-    dma_in.stream       = DMA2_STREAM_CRYP_IN;
-    dma_in.channel      = DMA2_CHANNEL_CRYP;
+    dma_in.dma          = DMA_CRYP;
+    dma_in.stream       = DMA_STREAM_CRYP_IN;
+    dma_in.channel      = DMA_CHANNEL_CRYP_IN;
     dma_in.dir          = MEMORY_TO_PERIPHERAL;
     dma_in.in_addr      = (physaddr_t) bufin;
     dma_in.out_addr     = (volatile physaddr_t)r_CORTEX_M_CRYP_DIN;
@@ -427,11 +425,10 @@ int cryp_do_dma(const uint8_t * bufin, const uint8_t * bufout, uint32_t size, in
     printf("sys_init returns %s !\n", strerror(ret));
 #endif
     // done by INIT_DONE, by kernel.
-    // enable_crypt_dma(DMA2, DMA2_STREAM_CRYP_IN);
 
-    dma_out.dma         = DMA2;
-    dma_out.stream      = DMA2_STREAM_CRYP_OUT;
-    dma_out.channel     = DMA2_CHANNEL_CRYP;
+    dma_out.dma         = DMA_CRYP;
+    dma_out.stream      = DMA_STREAM_CRYP_OUT;
+    dma_out.channel     = DMA_CHANNEL_CRYP_OUT;
     dma_out.dir         = PERIPHERAL_TO_MEMORY;
     dma_out.in_addr     = (volatile physaddr_t)r_CORTEX_M_CRYP_DOUT;
     dma_out.out_addr    = (physaddr_t) bufout;
@@ -474,7 +471,7 @@ err:
     return -1;
 }
 
-int cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
+int cryp_init_dma(user_dma_handler_t handler_in, user_dma_handler_t handler_out, int dma_in_desc,
                    int dma_out_desc)
 {
     e_syscall_ret ret;
@@ -482,9 +479,9 @@ int cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
     //cryp_enable_dma();
     cryp_disable_dma();
 
-    dma_in.dma      = DMA2;
-    dma_in.stream   = DMA2_STREAM_CRYP_IN;
-    dma_in.channel  = DMA2_CHANNEL_CRYP;
+    dma_in.dma      = DMA_CRYP;
+    dma_in.stream   = DMA_STREAM_CRYP_IN;
+    dma_in.channel  = DMA_CHANNEL_CRYP_IN;
     dma_in.dir      = MEMORY_TO_PERIPHERAL;
     dma_in.in_addr  = (physaddr_t) 0;
     dma_in.out_addr = (volatile physaddr_t)r_CORTEX_M_CRYP_DIN;
@@ -516,11 +513,10 @@ int cryp_init_dma(void *handler_in, void *handler_out, int dma_in_desc,
     printf("sys_init returns %s !\n", strerror(ret));
 #endif
     // done by INIT_DONE, by kernel.
-    // enable_crypt_dma(DMA2, DMA2_STREAM_CRYP_IN);
 
-    dma_out.dma         = DMA2;
-    dma_out.stream      = DMA2_STREAM_CRYP_OUT;
-    dma_out.channel     = DMA2_CHANNEL_CRYP;
+    dma_out.dma         = DMA_CRYP;
+    dma_out.stream      = DMA_STREAM_CRYP_OUT;
+    dma_out.channel     = DMA_CHANNEL_CRYP_OUT;
     dma_out.dir         = PERIPHERAL_TO_MEMORY;
     dma_out.in_addr     = (volatile physaddr_t)r_CORTEX_M_CRYP_DOUT;
     dma_out.out_addr    = (physaddr_t) 0;
@@ -575,11 +571,19 @@ int cryp_early_init(bool with_dma,
     device_t dev;
     memset((void*)&dev, 0, sizeof(device_t));
     strncpy(dev.name, name, sizeof (dev.name));
-    dev.address = 0x50060000;
     if (usage == CRYP_USER) {
-        dev.size = 0x100;
-    } else {
-        dev.size = 0x800;
+        dev.address = cryp_user_dev_infos.address;
+        dev.size = cryp_user_dev_infos.size;
+    } else if (usage == CRYP_CFG){
+        dev.address = cryp_cfg_dev_infos.address;
+        dev.size = cryp_cfg_dev_infos.size;
+    }
+    else{
+        /* This is an error! */
+#if CONFIG_USR_DRV_CRYP_DEBUG
+        printf("Error: DMA CRYP, asking for bad usage mode %d!\n", usage);
+#endif
+        goto err;
     }
     if (map_mode == CRYP_MAP_AUTO) {
       dev.map_mode = DEV_MAP_AUTO;
@@ -609,14 +613,14 @@ int cryp_early_init(bool with_dma,
     if (!with_dma) {
       goto end;
     }
-    dma_in.channel = DMA2_CHANNEL_CRYP;
+    dma_in.channel = DMA_CHANNEL_CRYP_IN;
     dma_in.dir = MEMORY_TO_PERIPHERAL;
     dma_in.in_addr = (physaddr_t) 0;
     dma_in.out_addr = (volatile physaddr_t)r_CORTEX_M_CRYP_DIN;
     dma_in.in_prio = DMA_PRI_MEDIUM;
-    dma_in.dma = DMA2;
+    dma_in.dma = DMA_CRYP;
     dma_in.size = 0;
-    dma_in.stream = DMA2_STREAM_CRYP_IN;
+    dma_in.stream = DMA_STREAM_CRYP_IN;
     dma_in.mode = DMA_DIRECT_MODE;
     dma_in.mem_inc = 1;
     dma_in.dev_inc = 0;
@@ -642,16 +646,15 @@ int cryp_early_init(bool with_dma,
     printf("sys_init returns %s !\n", strerror(ret));
 #endif
     // done by INIT_DONE, by kernel.
-    // enable_crypt_dma(DMA2, DMA2_STREAM_CRYP_IN);
 
-    dma_out.channel = DMA2_CHANNEL_CRYP;
+    dma_out.channel = DMA_CHANNEL_CRYP_OUT;
     dma_out.dir = PERIPHERAL_TO_MEMORY;
     dma_out.in_addr = (volatile physaddr_t)r_CORTEX_M_CRYP_DOUT;
     dma_out.out_addr = (physaddr_t) 0;
     dma_out.out_prio = DMA_PRI_HIGH;
-    dma_out.dma = DMA2;
+    dma_out.dma = DMA_CRYP;
     dma_out.size = 0;
-    dma_out.stream = DMA2_STREAM_CRYP_OUT;
+    dma_out.stream = DMA_STREAM_CRYP_OUT;
     dma_out.mode = DMA_DIRECT_MODE;
     dma_out.mem_inc = 1;
     dma_out.dev_inc = 0;
