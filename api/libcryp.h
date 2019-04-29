@@ -13,10 +13,10 @@
 #define r_CORTEX_M_CRYP_IMSCR		REG_ADDR(CRYP_BASE + 0x14)
 #define r_CORTEX_M_CRYP_RISR		REG_ADDR(CRYP_BASE + 0x18)
 #define r_CORTEX_M_CRYP_MISR		REG_ADDR(CRYP_BASE + 0x1c)
-#define r_CORTEX_M_CRYP_KxLR(n)	REG_ADDR(CRYP_BASE + 0x20 + (n * 8))
-#define r_CORTEX_M_CRYP_KxRR(n)	REG_ADDR(CRYP_BASE + 0x24 + (n * 8))
-#define r_CORTEX_M_CRYP_IVxLR(n)	REG_ADDR(CRYP_BASE + 0x40 + (n * 8))
-#define r_CORTEX_M_CRYP_IVxRR(n)	REG_ADDR(CRYP_BASE + 0x44 + (n * 8))
+#define r_CORTEX_M_CRYP_KxLR(n)	REG_ADDR(CRYP_BASE + 0x20 + ((n) * 8))
+#define r_CORTEX_M_CRYP_KxRR(n)	REG_ADDR(CRYP_BASE + 0x24 + ((n) * 8))
+#define r_CORTEX_M_CRYP_IVxLR(n)	REG_ADDR(CRYP_BASE + 0x40 + ((n) * 8))
+#define r_CORTEX_M_CRYP_IVxRR(n)	REG_ADDR(CRYP_BASE + 0x44 + ((n) * 8))
 
 /* CRYP control register */
 #define CRYP_CR_ALGODIR_Pos	2
