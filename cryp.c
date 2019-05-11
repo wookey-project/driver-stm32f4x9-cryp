@@ -344,7 +344,7 @@ int cryp_do_no_dma(const uint8_t * data_in, uint8_t * data_out,
      * two AES blocks inside it.
      */
     i = 0;
-    while (i < data_len / 16) {
+    while (i < (data_len / 16)) {
         uint32_t num_states = 1;
         i++;
         /* Consume two AES states if we can */
