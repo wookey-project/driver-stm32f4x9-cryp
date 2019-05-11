@@ -72,16 +72,18 @@ static int is_busy(void)
 void cryp_set_keylen(enum crypto_key_len  key_len)
 {
 
-   while (is_busy())
+   while (is_busy()){
        continue;
+    }
     set_reg(r_CORTEX_M_CRYP_CR, key_len, CRYP_CR_KEYSIZE);
 }
 
 
 void cryp_set_iv(const uint8_t * iv, unsigned int iv_len)
 {
-    while (is_busy())
+    while (is_busy()){
        continue;
+    }
     if(iv == NULL){
        return;
     }
@@ -103,8 +105,9 @@ void cryp_set_iv(const uint8_t * iv, unsigned int iv_len)
 
 void cryp_get_iv(uint8_t * iv, unsigned int iv_len)
 {
-    while (is_busy())
+    while (is_busy()){
        continue;
+    }
     if(iv == NULL){
        return;
     }
@@ -357,19 +360,22 @@ int cryp_do_no_dma(const uint8_t * data_in, uint8_t * data_out,
             write_reg_value(r_CORTEX_M_CRYP_DIN, *(const uint32_t *) data_in);
             data_in += 4;
         }
-        while (!is_out_fifo_not_empty())
+        while (!is_out_fifo_not_empty()){
             continue;
+        }
         for (j = 0; j < (4 * num_states); j++) {
             *(uint32_t *) data_out = read_reg_value(r_CORTEX_M_CRYP_DOUT);
             data_out += 4;
         }
 
-        while (!is_in_fifo_not_full())
+        while (!is_in_fifo_not_full()){
             continue;
+        }
     }
 
-    while (is_busy())
+    while (is_busy()){
         continue;
+    }
 
     return 0;
 }
