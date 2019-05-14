@@ -1,5 +1,8 @@
 .. _cryp_api:
 
+
+.. highlight:: c
+
 Cryp driver API
 ---------------
 

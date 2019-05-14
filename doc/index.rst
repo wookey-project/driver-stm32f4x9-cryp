@@ -1,6 +1,9 @@
 The Cryp driver
 ===============
 
+.. highlight:: c
+
+
 This library is an implementation of the STM32F4 Cryp cryptographic HW accelerator.
 
 It provide an abstraction of the Cryp device interactions through high level
