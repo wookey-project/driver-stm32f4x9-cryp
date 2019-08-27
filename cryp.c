@@ -680,7 +680,10 @@ int cryp_early_init(bool with_dma,
 #if CONFIG_USR_DRV_CRYP_DEBUG
     printf("sys_init returns %s !\n", strerror(ret));
 #endif
+
 end:
+    /* now that device is properly initialized, set device descriptor */
+    dev_cryp_desc = dev_cryp_desc_;
     return 0;
 
 err:
